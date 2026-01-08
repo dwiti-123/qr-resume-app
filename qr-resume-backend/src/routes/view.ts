@@ -11,26 +11,28 @@ const supabase = createClient(
   process.env.SUPABASE_ANON_KEY!
 );
 
-// In-memory map (demo)
-const pdfMap: Record<string, string> = {};
-
-router.get('/:id', async (req: Request, res: Response) => {
+/**
+ * GET /api/view?file=<filename>
+ * Redirects to public Supabase PDF URL
+ */
+router.get('/', async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const filename = pdfMap[id];
+    const file = req.query.file as string;
 
-    if (!filename) return res.status(404).send('PDF not found');
+    if (!file) {
+      return res.status(400).send('Missing file parameter');
+    }
 
-    // Supabase v2: getPublicUrl() returns only { data: { publicUrl } }
+    const filename = decodeURIComponent(file);
+
     const { data } = supabase.storage
       .from(process.env.BUCKET_NAME!)
       .getPublicUrl(filename);
 
     if (!data?.publicUrl) {
-      return res.status(500).send('Failed to get public URL');
+      return res.status(404).send('PDF not found');
     }
 
-    // Redirect to PDF
     res.redirect(data.publicUrl);
   } catch (err) {
     console.error(err);
