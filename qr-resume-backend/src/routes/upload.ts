@@ -1,9 +1,8 @@
-import { Router, Request, Response } from 'express';
-import multer from 'multer';
-import QRCode from 'qrcode';
-import { v4 as uuidv4 } from 'uuid';
-import { createClient } from '@supabase/supabase-js';
-import dotenv from 'dotenv';
+import { Router, Request, Response } from "express";
+import multer from "multer";
+import QRCode from "qrcode";
+import { createClient } from "@supabase/supabase-js";
+import dotenv from "dotenv";
 
 dotenv.config();
 
@@ -15,43 +14,62 @@ const supabase = createClient(
   process.env.SUPABASE_ANON_KEY!
 );
 
-// In-memory map of uniqueId -> filename
-const pdfMap: Record<string, string> = {};
-
-router.post('/', upload.single('pdf'), async (req: Request, res: Response) => {
+router.post("/", upload.single("pdf"), async (req: Request, res: Response) => {
   try {
     const pdfFile = req.file;
-    const profileLink = req.body.profileLink || '';
 
-    if (!pdfFile) return res.json({ success: false, error: 'No PDF uploaded' });
+    if (!pdfFile) {
+      console.error("No PDF uploaded");
+      return res.status(400).json({ success: false, error: "No PDF uploaded" });
+    }
 
-    const uniqueId = uuidv4();
-    const filename = `${uniqueId}-${pdfFile.originalname}`;
+    // Generate a safe filename: replace spaces with underscores
+    const timestamp = Date.now();
+    const safeFilename = `${timestamp}-${pdfFile.originalname.replace(/\s+/g, "_")}`;
+
+    console.log("Uploading PDF with filename:", safeFilename);
 
     // Upload PDF to Supabase bucket
-    const { error: uploadError } = await supabase.storage
+    const { data: uploadData, error: uploadError } = await supabase.storage
       .from(process.env.BUCKET_NAME!)
-      .upload(filename, pdfFile.buffer, { contentType: 'application/pdf' });
+      .upload(safeFilename, pdfFile.buffer, { contentType: "application/pdf" });
 
-    if (uploadError) throw uploadError;
+    if (uploadError) {
+      console.error("Supabase upload error:", uploadError);
+      return res
+        .status(500)
+        .json({ success: false, error: "Failed to upload PDF", details: uploadError });
+    }
 
-    // Save mapping for view API
-    pdfMap[uniqueId] = filename;
+    // Use `path` (relative to bucket) to generate public URL
+    const filePath = uploadData?.path;
+    if (!filePath) {
+      return res.status(500).json({ success: false, error: "Upload succeeded but path missing" });
+    }
 
-    // Generate QR code pointing to /api/view/:id
-    const viewUrl = `${process.env.BASE_URL}/api/view/${uniqueId}`;
-    const qrCodeDataUrl = await QRCode.toDataURL(viewUrl);
+    const { data: urlData } = supabase.storage
+      .from(process.env.BUCKET_NAME!)
+      .getPublicUrl(filePath);
+
+    const publicUrl = urlData?.publicUrl;
+    if (!publicUrl) {
+      return res.status(500).json({ success: false, error: "Failed to get public URL" });
+    }
+
+    console.log("Public URL:", publicUrl);
+
+    // Generate QR code from public URL
+    const qrCode = await QRCode.toDataURL(publicUrl);
+    console.log("QR code generated successfully");
 
     res.json({
       success: true,
-      uniqueId,
-      resumeUrl: viewUrl,
-      qrCode: qrCodeDataUrl,
-      profileLink,
+      resumeUrl: publicUrl,
+      qrCode,
     });
   } catch (err) {
-    console.error(err);
-    res.json({ success: false, error: 'Failed to upload PDF' });
+    console.error("Unexpected error:", err);
+    res.status(500).json({ success: false, error: "Upload failed", details: err });
   }
 });
 

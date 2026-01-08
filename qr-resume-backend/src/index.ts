@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import uploadRouter from './routes/upload.js';
-import viewRouter from './routes/view.js';
+
 
 dotenv.config();
 
@@ -12,7 +12,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api/upload', uploadRouter);
-app.use('/api/view', viewRouter);
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
