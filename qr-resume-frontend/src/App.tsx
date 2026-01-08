@@ -159,7 +159,7 @@ const App: React.FC = () => {
                   </div>
 
                   {/* Profile Link */}
-                  <div>
+                  {/* <div>
                     <label htmlFor="profile-link" className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
                       Profile Link (Optional)
                     </label>
@@ -174,7 +174,7 @@ const App: React.FC = () => {
                       className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-xs sm:text-sm"
                     />
                     <p className="mt-1 text-xs text-gray-500">Add your LinkedIn or portfolio link</p>
-                  </div>
+                  </div> */}
 
                   {/* Generate Button */}
                   <button
@@ -201,7 +201,7 @@ const App: React.FC = () => {
                     <h3 className="font-semibold text-gray-800 mb-3 text-sm sm:text-base">ℹ️ How it works:</h3>
                     <ul className="space-y-2 text-xs sm:text-sm text-gray-700 list-disc list-inside">
                       <li>Upload your PDF resume</li>
-                      <li>Optionally add your profile link</li>
+                      {/* <li>Optionally add your profile link</li> */}
                       <li>Generate a unique QR code</li>
                       <li>Share with recruiters</li>
                       <li>Anyone can scan and view</li>
