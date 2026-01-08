@@ -1,5 +1,5 @@
-import React, { useState, type ChangeEvent, type MouseEvent } from 'react';
-import { Download, Copy, Check, AlertCircle } from 'lucide-react';
+import React, { useState, type ChangeEvent, type MouseEvent } from "react";
+import { Download, Copy, Check, AlertCircle } from "lucide-react";
 
 interface QRData {
   qrCode: string;
@@ -18,42 +18,42 @@ interface UploadResponse {
 
 const App: React.FC = () => {
   const [pdfFile, setPdfFile] = useState<File | null>(null);
-  const [profileLink, setProfileLink] = useState<string>('');
+  const [profileLink, setProfileLink] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [qrData, setQrData] = useState<QRData | null>(null);
   const [copied, setCopied] = useState<boolean>(false);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string>("");
 
-  const API_URL = 'https://qr-resume-app.onrender.com';
+  const API_URL = "https://qr-resume-app.onrender.com";
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>): void => {
     const file = e.target.files?.[0];
-    if (file && file.type === 'application/pdf') {
+    if (file && file.type === "application/pdf") {
       setPdfFile(file);
-      setError('');
+      setError("");
     } else {
-      setError('Please upload a PDF file only');
+      setError("Please upload a PDF file only");
       setPdfFile(null);
     }
   };
 
   const handleGenerateQR = async (): Promise<void> => {
     if (!pdfFile) {
-      setError('Please select a PDF file');
+      setError("Please select a PDF file");
       return;
     }
 
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       const formData = new FormData();
-      formData.append('pdf', pdfFile);
-      formData.append('profileLink', profileLink);
+      formData.append("pdf", pdfFile);
+      formData.append("profileLink", profileLink);
 
       const response = await fetch(`${API_URL}/api/upload`, {
-        method: 'POST',
-        body: formData
+        method: "POST",
+        body: formData,
       });
 
       const data: UploadResponse = await response.json();
@@ -62,15 +62,15 @@ const App: React.FC = () => {
         setQrData({
           qrCode: data.qrCode,
           resumeUrl: data.resumeUrl,
-          profileLink: data.profileLink || ''
+          profileLink: data.profileLink || "",
         });
         setPdfFile(null);
-        setProfileLink('');
+        setProfileLink("");
       } else {
-        setError(data.error || 'Failed to generate QR code');
+        setError(data.error || "Failed to generate QR code");
       }
     } catch (err) {
-      setError('Connection error. Make sure backend is running on port 5000');
+      setError("Connection error. Make sure backend is running on port 5000");
     } finally {
       setLoading(false);
     }
@@ -80,15 +80,17 @@ const App: React.FC = () => {
     e.preventDefault();
     if (!qrData) return;
 
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = qrData.qrCode;
-    link.download = 'resume-qr-code.png';
+    link.download = "resume-qr-code.png";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
-  const handleCopyLink = async (e: MouseEvent<HTMLButtonElement>): Promise<void> => {
+  const handleCopyLink = async (
+    e: MouseEvent<HTMLButtonElement>
+  ): Promise<void> => {
     e.preventDefault();
     if (!qrData) return;
 
@@ -97,7 +99,7 @@ const App: React.FC = () => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      setError('Failed to copy link');
+      setError("Failed to copy link");
     }
   };
 
@@ -105,7 +107,7 @@ const App: React.FC = () => {
     e.preventDefault();
     setQrData(null);
     setPdfFile(null);
-    setProfileLink('');
+    setProfileLink("");
   };
 
   return (
@@ -132,14 +134,20 @@ const App: React.FC = () => {
                   {/* Error Message */}
                   {error && (
                     <div className="flex items-start gap-2 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg">
-                      <AlertCircle className="text-red-600 shrink-0 mt-0.5" size={18} />
+                      <AlertCircle
+                        className="text-red-600 shrink-0 mt-0.5"
+                        size={18}
+                      />
                       <p className="text-red-700 text-xs sm:text-sm">{error}</p>
                     </div>
                   )}
 
                   {/* PDF Upload */}
                   <div>
-                    <label htmlFor="pdf-upload" className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
+                    <label
+                      htmlFor="pdf-upload"
+                      className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2"
+                    >
                       Upload Resume (PDF)
                     </label>
                     <div className="relative">
@@ -154,7 +162,9 @@ const App: React.FC = () => {
                       />
                     </div>
                     {pdfFile && (
-                      <p className="mt-1 text-xs sm:text-sm text-green-600">✓ {pdfFile.name.substring(0, 20)}...</p>
+                      <p className="mt-1 text-xs sm:text-sm text-green-600">
+                        ✓ {pdfFile.name.substring(0, 20)}...
+                      </p>
                     )}
                   </div>
 
@@ -190,7 +200,7 @@ const App: React.FC = () => {
                         Generating...
                       </>
                     ) : (
-                      'Generate QR Code'
+                      "Generate QR Code"
                     )}
                   </button>
                 </div>
@@ -198,7 +208,9 @@ const App: React.FC = () => {
                 {/* Right Side - Info */}
                 <div className="hidden md:block">
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-6 h-full flex flex-col justify-center">
-                    <h3 className="font-semibold text-gray-800 mb-3 text-sm sm:text-base">ℹ️ How it works:</h3>
+                    <h3 className="font-semibold text-gray-800 mb-3 text-sm sm:text-base">
+                      ℹ️ How it works:
+                    </h3>
                     <ul className="space-y-2 text-xs sm:text-sm text-gray-700 list-disc list-inside">
                       <li>Upload your PDF resume</li>
                       {/* <li>Optionally add your profile link</li> */}
@@ -230,7 +242,10 @@ const App: React.FC = () => {
                 <div className="space-y-3 sm:space-y-4">
                   {/* Resume URL */}
                   <div>
-                    <label htmlFor="resume-url" className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 sm:mb-2">
+                    <label
+                      htmlFor="resume-url"
+                      className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 sm:mb-2"
+                    >
                       Resume URL
                     </label>
                     <div className="flex flex-col sm:flex-row gap-2">
@@ -246,8 +261,16 @@ const App: React.FC = () => {
                       />
                       <button
                         onClick={handleCopyLink}
-                        title={copied ? "Copied to clipboard" : "Copy URL to clipboard"}
-                        aria-label={copied ? "Copied to clipboard" : "Copy URL to clipboard"}
+                        title={
+                          copied
+                            ? "Copied to clipboard"
+                            : "Copy URL to clipboard"
+                        }
+                        aria-label={
+                          copied
+                            ? "Copied to clipboard"
+                            : "Copy URL to clipboard"
+                        }
                         className="flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition duration-200 text-xs sm:text-sm whitespace-nowrap"
                       >
                         {copied ? (
@@ -311,7 +334,9 @@ const App: React.FC = () => {
 
       {/* Mobile Info Section */}
       <div className="md:hidden mt-4 text-center">
-        <p className="text-xs text-gray-600">Upload PDF • Add profile link • Generate QR • Share with recruiters</p>
+        <p className="text-xs text-gray-600">
+          Upload PDF • Add profile link • Generate QR • Share with recruiters
+        </p>
       </div>
     </div>
   );
